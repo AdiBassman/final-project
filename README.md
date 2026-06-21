@@ -51,7 +51,15 @@ npm run preview    # preview the production build locally
 
 ## Deployment
 
-Deployment link: _TBD (added in Phase 2.5 — initial Vercel deploy)._
+Deployed on Vercel as a single-page app. `vercel.json` rewrites all routes to
+`/index.html` so deep links survive a refresh.
+
+**Vercel project settings (this app is in a subdirectory of the repo):**
+- **Root Directory:** `adi-bassman/final-project`
+- Framework: Vite · Build: `npm run build` · Output: `dist`
+- Env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`): added in Phase 2.5.
+
+Deployment link: _TBD (paste production URL here after first deploy)._
 
 ## Project status
 
