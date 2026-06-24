@@ -28,7 +28,7 @@ Finding a private tutor is fragmented — students dig through Facebook groups, 
 
 - **Frontend:** React + Vite + TypeScript, React Router
 - **Styling:** Tailwind CSS
-- **Backend:** Supabase (Auth, PostgreSQL, Row Level Security) — added in Phase 2
+- **Backend:** Supabase (Auth, PostgreSQL, Row Level Security)
 - **Deployment:** Vercel
 
 ## Setup
@@ -40,7 +40,12 @@ npm run dev
 
 App runs at the URL Vite prints (default http://localhost:5173).
 
-Supabase env vars are required from Phase 2 onward — copy `.env.example` to `.env.local` and fill in.
+### Supabase setup
+
+1. Copy `.env.example` to `.env.local` and fill in your Supabase **Project URL** and **publishable (anon) key**. Never put the secret key in this app.
+2. In the Supabase SQL editor, run the migrations in `supabase/migrations/` in order (currently `0001_phase2_profiles.sql`).
+3. Auth → Providers → Email: for easy local testing, **disable "Confirm email"** so signup logs you in immediately.
+4. Auth → URL Configuration: add your local (`http://localhost:5173`) and production Vercel URLs to the redirect allow-list.
 
 ## Build
 
@@ -59,11 +64,13 @@ Deployed on Vercel as a single-page app. `vercel.json` rewrites all routes to
 - Framework: Vite · Build: `npm run build` · Output: `dist`
 - Env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`): added in Phase 2.5.
 
-Deployment link: _TBD (paste production URL here after first deploy)._
+Deployment link: https://final-project-ochre-chi-15.vercel.app/
 
 ## Project status
 
 - **Phase 1 — Setup + UI shell:** ✅ App scaffolded (Vite + React + TS + Tailwind + React Router). All routes navigable with placeholder pages, shared layout, and navbar.
-- Phases 2–7: pending.
+- **Early Vercel deploy:** ✅ Live with SPA rewrite (deep-link refresh verified). Subdir root config validated ahead of Phase 2.5.
+- **Phase 2 — Supabase + Auth:** ✅ Email/password signup (role chosen at signup), login, logout. `profiles` table auto-populated by a DB trigger; RLS enabled. Route guards (`ProtectedRoute`, `RoleRoute`) and an auth-aware navbar.
+- Phases 3–7: pending.
 
 See [`docs/superpowers/specs/2026-06-21-tutormatch-design.md`](docs/superpowers/specs/2026-06-21-tutormatch-design.md) for the full design spec and phased roadmap.
