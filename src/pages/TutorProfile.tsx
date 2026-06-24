@@ -1,16 +1,29 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getTutor } from '../lib/queries'
 import type { TutorListItem } from '../lib/types'
+import { useAuth } from '../auth/useAuth'
 import Avatar from '../components/Avatar'
 import Spinner from '../components/Spinner'
 import ErrorMessage from '../components/ErrorMessage'
+import ContactModal from '../components/ContactModal'
 
 export default function TutorProfile() {
   const { id } = useParams<{ id: string }>()
+  const { session } = useAuth()
+  const navigate = useNavigate()
   const [tutor, setTutor] = useState<TutorListItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [contactOpen, setContactOpen] = useState(false)
+
+  function handleContact() {
+    if (!session) {
+      navigate('/login', { state: { from: `/tutors/${id}` } })
+      return
+    }
+    setContactOpen(true)
+  }
 
   useEffect(() => {
     if (!id) return
@@ -92,13 +105,23 @@ export default function TutorProfile() {
       <div className="mt-8">
         <button
           type="button"
-          disabled
-          className="rounded-md bg-indigo-600 px-5 py-2.5 font-medium text-white opacity-60"
-          title="Coming in Phase 5"
+          onClick={handleContact}
+          className="rounded-md bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-700"
         >
-          Contact tutor (Phase 5)
+          Contact tutor
         </button>
+        {!session && (
+          <p className="mt-2 text-sm text-slate-500">You'll be asked to log in first.</p>
+        )}
       </div>
+
+      {contactOpen && (
+        <ContactModal
+          tutorId={tutor.id}
+          tutorName={tutor.full_name}
+          onClose={() => setContactOpen(false)}
+        />
+      )}
     </section>
   )
 }

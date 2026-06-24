@@ -25,7 +25,10 @@ values
   ('00000000-0000-0000-0000-000000000000','a0000000-0000-0000-0000-000000000007','authenticated','authenticated','shira.katz@tutormatch.test',    crypt('TutorDemo123!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}','{"full_name":"Shira Katz","role":"tutor"}',    now(), now()),
   ('00000000-0000-0000-0000-000000000000','a0000000-0000-0000-0000-000000000008','authenticated','authenticated','omer.bar@tutormatch.test',      crypt('TutorDemo123!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}','{"full_name":"Omer Bar","role":"tutor"}',      now(), now()),
   ('00000000-0000-0000-0000-000000000000','a0000000-0000-0000-0000-000000000009','authenticated','authenticated','lior.shapira@tutormatch.test',  crypt('TutorDemo123!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}','{"full_name":"Lior Shapira","role":"tutor"}',  now(), now()),
-  ('00000000-0000-0000-0000-000000000000','a0000000-0000-0000-0000-000000000010','authenticated','authenticated','avigail.dahan@tutormatch.test', crypt('TutorDemo123!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}','{"full_name":"Avigail Dahan","role":"tutor"}', now(), now())
+  ('00000000-0000-0000-0000-000000000000','a0000000-0000-0000-0000-000000000010','authenticated','authenticated','avigail.dahan@tutormatch.test', crypt('TutorDemo123!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}','{"full_name":"Avigail Dahan","role":"tutor"}', now(), now()),
+  -- Two demo students (password also TutorDemo123!) so dashboards have content.
+  ('00000000-0000-0000-0000-000000000000','c0000000-0000-0000-0000-000000000001','authenticated','authenticated','student.one@tutormatch.test',   crypt('TutorDemo123!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}','{"full_name":"Ron Student","role":"student"}',   now(), now()),
+  ('00000000-0000-0000-0000-000000000000','c0000000-0000-0000-0000-000000000002','authenticated','authenticated','student.two@tutormatch.test',   crypt('TutorDemo123!', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}','{"full_name":"Gal Student","role":"student"}',   now(), now())
 on conflict (id) do nothing;
 
 -- 1b. GoTrue crashes on login (HTTP 500) if these token columns are NULL rather
@@ -81,3 +84,12 @@ cross join lateral unnest(seed.subject_names) as sn(name)
 join public.tutor_profiles tp on tp.id = seed.tutor_id::uuid
 join public.subjects s on s.name = sn.name
 on conflict (tutor_id, subject_id) do nothing;
+
+-- 5. Sample lesson requests (so tutor + student dashboards have content).
+--    Requires table lesson_requests (migration 0003). Fixed ids = idempotent.
+insert into public.lesson_requests (id, tutor_id, student_id, student_name, student_email, message)
+values
+  ('d0000000-0000-0000-0000-000000000001','b0000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001','Ron Student','student.one@tutormatch.test','Hi Noa, I need help preparing for my 5-unit math bagrut. Are you available on weekends?'),
+  ('d0000000-0000-0000-0000-000000000002','b0000000-0000-0000-0000-000000000003','c0000000-0000-0000-0000-000000000001','Ron Student','student.one@tutormatch.test','Hello Maya, looking for chemistry help before my next exam. What is your availability?'),
+  ('d0000000-0000-0000-0000-000000000003','b0000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000002','Gal Student','student.two@tutormatch.test','Hi, can you tutor physics for first-year university? Thanks!')
+on conflict (id) do nothing;

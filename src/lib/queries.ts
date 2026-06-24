@@ -50,6 +50,24 @@ export async function getTutor(id: string): Promise<TutorListItem | null> {
   return toTutorListItem(data as unknown as TutorRow)
 }
 
+// Submit a lesson request. RLS requires student_id === the caller's auth id.
+export async function sendLessonRequest(params: {
+  tutorId: string
+  studentId: string
+  studentName: string
+  studentEmail: string
+  message: string
+}): Promise<void> {
+  const { error } = await supabase.from('lesson_requests').insert({
+    tutor_id: params.tutorId,
+    student_id: params.studentId,
+    student_name: params.studentName,
+    student_email: params.studentEmail,
+    message: params.message,
+  })
+  if (error) throw error
+}
+
 // All subjects, alphabetical.
 export async function getSubjects(): Promise<Subject[]> {
   const { data, error } = await supabase.from('subjects').select('*').order('name')

@@ -32,6 +32,16 @@ export interface TutorProfileInput {
   subject_ids: number[]
 }
 
+export interface LessonRequest {
+  id: string
+  tutor_id: string
+  student_id: string
+  student_name: string
+  student_email: string
+  message: string
+  created_at: string
+}
+
 // Flattened tutor record for the directory and profile page.
 export interface TutorListItem {
   id: string
