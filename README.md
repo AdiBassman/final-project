@@ -28,10 +28,11 @@ Finding a private tutor is fragmented — students dig through Facebook groups, 
 
 - **Auth** — email/password signup with a role (tutor / student), login, logout; session persists.
 - **Tutor profiles** — tutors edit bio, city, hourly rate, online availability, and subjects.
-- **Directory** — browse tutors; filter by name, subject, city, and online-only.
-- **Tutor page** — full profile + a prominent Contact button.
+- **Directory** — browse tutors; filter by name, subject, city, online-only; **sort** by name/price; filters live in the URL (shareable, survive refresh).
+- **Tutor page** — full profile (+ "member since") and a prominent Contact button.
 - **Lesson requests** — logged-in students send a request (name/email prefilled, optional subject). A profile shows "you've already contacted this tutor."
-- **Dashboards** — tutors see requests received and can **Accept/Decline** them; students see requests sent with their **status** (pending/accepted/declined) and subject. Access enforced by Row Level Security.
+- **Dashboards** — tutors see requests received and can **Accept/Decline** with an optional note; students see requests sent with their **status** and the tutor's note. Access enforced by Row Level Security.
+- **Saved tutors** — students bookmark tutors (heart) and see them in their dashboard.
 
 ## Technologies used
 
@@ -52,7 +53,7 @@ App runs at the URL Vite prints (default http://localhost:5173).
 ### Supabase setup
 
 1. Copy `.env.example` to `.env.local` and fill in your Supabase **Project URL** and **publishable (anon) key**. Never put the secret key in this app.
-2. In the Supabase SQL editor, run the migrations in `supabase/migrations/` in order (`0001_…` through `0004_…`). Then optionally run `supabase/seed.sql` to load 10 demo tutors, 2 demo students, and sample lesson requests (all seeded accounts share the password `TutorDemo123!`).
+2. In the Supabase SQL editor, run the migrations in `supabase/migrations/` in order (`0001_…` through `0006_…`). Then optionally run `supabase/seed.sql` to load 10 demo tutors, 2 demo students, and sample lesson requests (all seeded accounts share the password `TutorDemo123!`).
 3. Auth → Providers → Email: for easy local testing, **disable "Confirm email"** so signup logs you in immediately.
 4. Auth → URL Configuration: add your local (`http://localhost:5173`) and production Vercel URLs to the redirect allow-list.
 

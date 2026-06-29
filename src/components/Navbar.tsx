@@ -20,7 +20,10 @@ export default function Navbar() {
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-      <nav className="w-full max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+      <nav
+        aria-label="Main navigation"
+        className="w-full max-w-5xl mx-auto px-4 h-14 flex items-center justify-between"
+      >
         <Link to="/" className="text-lg font-bold text-indigo-600">
           TutorMatch
         </Link>

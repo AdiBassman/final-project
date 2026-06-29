@@ -10,6 +10,8 @@ erDiagram
     tutor_profiles ||--o{ tutor_subjects : "has"
     subjects ||--o{ tutor_subjects : "in"
     tutor_profiles ||--o{ lesson_requests : "receives"
+    profiles ||--o{ favorites : "saves"
+    tutor_profiles ||--o{ favorites : "saved by"
 
     auth_users {
         uuid id PK
@@ -48,6 +50,12 @@ erDiagram
         text student_email
         text message
         text status "pending | accepted | declined"
+        text tutor_note "optional"
+        timestamptz created_at
+    }
+    favorites {
+        uuid student_id PK "FK -> profiles.id"
+        uuid tutor_id PK "FK -> tutor_profiles.id"
         timestamptz created_at
     }
 ```
@@ -109,7 +117,19 @@ A lesson inquiry from a student to a tutor. Immutable.
 | student_email | text | | snapshot at send time |
 | message | text | | not null |
 | status | text | | `CHECK (status IN ('pending','accepted','declined'))`, default `pending` |
+| tutor_note | text | | nullable; set by the tutor on accept/decline |
 | created_at | timestamptz | | default `now()` |
+
+### `favorites`
+Tutors a student has saved (many-to-many).
+
+| Column | Type | Key | Notes |
+|---|---|---|---|
+| student_id | uuid | PK, FK → `profiles.id` | cascade on delete |
+| tutor_id | uuid | PK, FK → `tutor_profiles.id` | cascade on delete |
+| created_at | timestamptz | | default `now()` |
+
+Composite primary key `(student_id, tutor_id)`.
 
 ## Relationships
 
@@ -125,4 +145,5 @@ A lesson inquiry from a student to a tutor. Immutable.
 - **tutor_profiles** — public read; insert/update/delete only your own (insert also requires role = tutor).
 - **subjects** — public read; no client writes.
 - **tutor_subjects** — public read; a tutor manages links only for their own tutor row.
-- **lesson_requests** — insert only as yourself (`student_id = auth.uid()`); readable by the sending student or the target tutor; the target tutor may update (used to set `status`); no delete.
+- **lesson_requests** — insert only as yourself (`student_id = auth.uid()`); readable by the sending student or the target tutor; the target tutor may update (used to set `status`/`tutor_note`); no delete.
+- **favorites** — fully private: a user may select/insert/delete only rows where `student_id = auth.uid()`.

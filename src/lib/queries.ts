@@ -80,6 +80,49 @@ export async function sendLessonRequest(params: {
   if (error) throw error
 }
 
+// The tutor_profile ids the user has favorited.
+export async function getFavoriteTutorIds(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('favorites')
+    .select('tutor_id')
+    .eq('student_id', userId)
+  if (error) throw error
+  return (data ?? []).map((f) => f.tutor_id as string)
+}
+
+// The user's favorited tutors as full directory items.
+export async function getFavoriteTutors(userId: string): Promise<TutorListItem[]> {
+  const { data, error } = await supabase
+    .from('favorites')
+    .select(`tutor_profiles!inner(${TUTOR_SELECT})`)
+    .eq('student_id', userId)
+  if (error) throw error
+  return ((data ?? []) as unknown as { tutor_profiles: TutorRow }[]).map((r) =>
+    toTutorListItem(r.tutor_profiles),
+  )
+}
+
+// Add or remove a favorite.
+export async function setFavorite(
+  userId: string,
+  tutorId: string,
+  favorite: boolean,
+): Promise<void> {
+  if (favorite) {
+    const { error } = await supabase
+      .from('favorites')
+      .insert({ student_id: userId, tutor_id: tutorId })
+    if (error) throw error
+  } else {
+    const { error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('student_id', userId)
+      .eq('tutor_id', tutorId)
+    if (error) throw error
+  }
+}
+
 // Whether the given student already sent a request to the given tutor.
 export async function hasContactedTutor(studentId: string, tutorId: string): Promise<boolean> {
   const { count, error } = await supabase

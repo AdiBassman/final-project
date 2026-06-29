@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getTutor, hasContactedTutor } from '../lib/queries'
+import { getTutor, hasContactedTutor, getFavoriteTutorIds, setFavorite } from '../lib/queries'
 import type { TutorListItem } from '../lib/types'
 import { useAuth } from '../auth/useAuth'
 import Avatar from '../components/Avatar'
 import Spinner from '../components/Spinner'
 import ErrorMessage from '../components/ErrorMessage'
 import ContactModal from '../components/ContactModal'
+import FavoriteButton from '../components/FavoriteButton'
 
 export default function TutorProfile() {
   const { id } = useParams<{ id: string }>()
@@ -17,6 +18,7 @@ export default function TutorProfile() {
   const [error, setError] = useState<string | null>(null)
   const [contactOpen, setContactOpen] = useState(false)
   const [alreadyContacted, setAlreadyContacted] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false)
 
   function handleContact() {
     if (!session) {
@@ -45,20 +47,35 @@ export default function TutorProfile() {
     }
   }, [id])
 
-  // Has this logged-in user already contacted this tutor?
+  // Has this logged-in user already contacted / favorited this tutor?
   useEffect(() => {
     if (!id || !user) {
       setAlreadyContacted(false)
+      setIsFavorite(false)
       return
     }
     let active = true
     hasContactedTutor(user.id, id)
       .then((c) => active && setAlreadyContacted(c))
       .catch(() => {})
+    getFavoriteTutorIds(user.id)
+      .then((ids) => active && setIsFavorite(ids.includes(id)))
+      .catch(() => {})
     return () => {
       active = false
     }
   }, [id, user, contactOpen])
+
+  async function toggleFavorite() {
+    if (!user || !id) return
+    const next = !isFavorite
+    setIsFavorite(next)
+    try {
+      await setFavorite(user.id, id, next)
+    } catch {
+      setIsFavorite(!next)
+    }
+  }
 
   if (loading) return <Spinner />
   if (error) return <ErrorMessage message={error} />
@@ -126,13 +143,18 @@ export default function TutorProfile() {
       )}
 
       <div className="mt-8">
-        <button
-          type="button"
-          onClick={handleContact}
-          className="rounded-md bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-700"
-        >
-          Contact tutor
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleContact}
+            className="rounded-md bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-700"
+          >
+            Contact tutor
+          </button>
+          {session && (
+            <FavoriteButton active={isFavorite} onToggle={toggleFavorite} className="text-2xl" />
+          )}
+        </div>
         {!session && (
           <p className="mt-2 text-sm text-slate-500">You'll be asked to log in first.</p>
         )}

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { sendLessonRequest } from '../lib/queries'
 import type { Subject } from '../lib/types'
@@ -22,6 +22,15 @@ export default function ContactModal({ tutorId, tutorName, subjects, onClose }: 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sent, setSent] = useState(false)
+
+  // Close on Escape for keyboard users.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -51,11 +60,16 @@ export default function ContactModal({ tutorId, tutorName, subjects, onClose }: 
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="contact-modal-title"
         className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
-          <h2 className="text-lg font-bold text-slate-900">Contact {tutorName}</h2>
+          <h2 id="contact-modal-title" className="text-lg font-bold text-slate-900">
+            Contact {tutorName}
+          </h2>
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600"
@@ -82,6 +96,7 @@ export default function ContactModal({ tutorId, tutorName, subjects, onClose }: 
               <input
                 type="text"
                 required
+                autoFocus
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={`mt-1 ${inputClass}`}

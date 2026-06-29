@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getTutors, getSubjects } from '../lib/queries'
+import { getTutors, getSubjects, getFavoriteTutorIds, setFavorite } from '../lib/queries'
+import { useAuth } from '../auth/useAuth'
 import type { Subject, TutorListItem } from '../lib/types'
 import TutorCard from '../components/TutorCard'
 import FilterBar, { type Filters } from '../components/FilterBar'
@@ -17,8 +18,10 @@ const SORTS: { value: Sort; label: string }[] = [
 ]
 
 export default function TutorDirectory() {
+  const { user } = useAuth()
   const [tutors, setTutors] = useState<TutorListItem[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [params, setParams] = useSearchParams()
@@ -73,6 +76,44 @@ export default function TutorDirectory() {
       active = false
     }
   }, [])
+
+  // Load this user's saved tutors (logged-in only).
+  useEffect(() => {
+    if (!user) {
+      setFavorites(new Set())
+      return
+    }
+    let active = true
+    getFavoriteTutorIds(user.id)
+      .then((ids) => active && setFavorites(new Set(ids)))
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [user])
+
+  async function toggleFavorite(tutorId: string) {
+    if (!user) return
+    const isFav = favorites.has(tutorId)
+    // Optimistic.
+    setFavorites((prev) => {
+      const next = new Set(prev)
+      if (isFav) next.delete(tutorId)
+      else next.add(tutorId)
+      return next
+    })
+    try {
+      await setFavorite(user.id, tutorId, !isFav)
+    } catch {
+      // Revert on failure.
+      setFavorites((prev) => {
+        const next = new Set(prev)
+        if (isFav) next.add(tutorId)
+        else next.delete(tutorId)
+        return next
+      })
+    }
+  }
 
   const cities = useMemo(
     () => Array.from(new Set(tutors.map((t) => t.city))).sort(),
@@ -145,7 +186,12 @@ export default function TutorDirectory() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {visible.map((t) => (
-              <TutorCard key={t.id} tutor={t} />
+              <TutorCard
+                key={t.id}
+                tutor={t}
+                favorite={favorites.has(t.id)}
+                onToggleFavorite={user ? () => toggleFavorite(t.id) : undefined}
+              />
             ))}
           </div>
         )}

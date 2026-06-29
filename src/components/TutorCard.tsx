@@ -1,8 +1,15 @@
 import { Link } from 'react-router-dom'
 import type { TutorListItem } from '../lib/types'
 import Avatar from './Avatar'
+import FavoriteButton from './FavoriteButton'
 
-export default function TutorCard({ tutor }: { tutor: TutorListItem }) {
+interface TutorCardProps {
+  tutor: TutorListItem
+  favorite?: boolean
+  onToggleFavorite?: () => Promise<void>
+}
+
+export default function TutorCard({ tutor, favorite, onToggleFavorite }: TutorCardProps) {
   return (
     <Link
       to={`/tutors/${tutor.id}`}
@@ -13,8 +20,11 @@ export default function TutorCard({ tutor }: { tutor: TutorListItem }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <h3 className="truncate font-semibold text-slate-900">{tutor.full_name}</h3>
-            <span className="shrink-0 text-sm font-medium text-slate-700">
+            <span className="flex shrink-0 items-center gap-2 text-sm font-medium text-slate-700">
               ₪{tutor.hourly_rate}/hr
+              {onToggleFavorite && (
+                <FavoriteButton active={Boolean(favorite)} onToggle={onToggleFavorite} />
+              )}
             </span>
           </div>
           <p className="text-sm text-slate-500">
