@@ -42,6 +42,23 @@ export interface LessonRequest {
   created_at: string
 }
 
+// A request as seen in the tutor's inbox.
+export interface TutorInboxRequest {
+  id: string
+  student_name: string
+  student_email: string
+  message: string
+  created_at: string
+}
+
+// A request as seen in the student's "sent" list.
+export interface StudentSentRequest {
+  id: string
+  message: string
+  created_at: string
+  tutor: { id: string; full_name: string; city: string }
+}
+
 // Flattened tutor record for the directory and profile page.
 export interface TutorListItem {
   id: string

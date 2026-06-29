@@ -1,5 +1,12 @@
 import { supabase } from './supabaseClient'
-import type { Subject, TutorProfile, TutorProfileInput, TutorListItem } from './types'
+import type {
+  Subject,
+  TutorProfile,
+  TutorProfileInput,
+  TutorListItem,
+  TutorInboxRequest,
+  StudentSentRequest,
+} from './types'
 
 // Shape PostgREST returns for the embedded join below.
 interface TutorRow {
@@ -66,6 +73,52 @@ export async function sendLessonRequest(params: {
     message: params.message,
   })
   if (error) throw error
+}
+
+// Requests received by the tutor who owns `userId`. RLS also enforces this.
+export async function getRequestsForTutor(userId: string): Promise<TutorInboxRequest[]> {
+  const { data, error } = await supabase
+    .from('lesson_requests')
+    .select('id, student_name, student_email, message, created_at, tutor_profiles!inner(user_id)')
+    .eq('tutor_profiles.user_id', userId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    student_name: r.student_name as string,
+    student_email: r.student_email as string,
+    message: r.message as string,
+    created_at: r.created_at as string,
+  }))
+}
+
+// Requests sent by a student, with the target tutor's name + city.
+export async function getRequestsByStudent(studentId: string): Promise<StudentSentRequest[]> {
+  const { data, error } = await supabase
+    .from('lesson_requests')
+    .select(
+      'id, message, created_at, tutor_profiles!inner(id, city, profiles!inner(full_name))',
+    )
+    .eq('student_id', studentId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return ((data ?? []) as unknown as StudentRequestRow[]).map((r) => ({
+    id: r.id,
+    message: r.message,
+    created_at: r.created_at,
+    tutor: {
+      id: r.tutor_profiles.id,
+      full_name: r.tutor_profiles.profiles?.full_name ?? '',
+      city: r.tutor_profiles.city,
+    },
+  }))
+}
+
+interface StudentRequestRow {
+  id: string
+  message: string
+  created_at: string
+  tutor_profiles: { id: string; city: string; profiles: { full_name: string } | null }
 }
 
 // All subjects, alphabetical.

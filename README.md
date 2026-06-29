@@ -74,6 +74,7 @@ Deployment link: https://final-project-ochre-chi-15.vercel.app/
 - **Phase 3 — Tutor profiles + seed:** ✅ `tutor_profiles`, `subjects`, `tutor_subjects` tables + RLS. Tutors create/edit their profile (bio, city, hourly rate, online availability, subjects) at `/profile/edit`. Initials `Avatar`, `SubjectMultiSelect` chips, `lib/queries.ts` data layer. `seed.sql` loads 10 demo tutors across Israeli cities.
 - **Phase 4 — Directory + filtering:** ✅ `/tutors` lists all tutors (`TutorCard` grid) with client-side filters (name search, subject, city, online-only). `/tutors/:id` shows a full tutor profile. Shared `Spinner`/`EmptyState`/`ErrorMessage`.
 - **Phase 5 — Lesson requests:** ✅ `lesson_requests` table + RLS (student inserts own; student & target tutor can read). `ContactModal` on the tutor profile (auth-gated; prefilled name/email from account). `sendLessonRequest` query. Seed adds 2 students + sample requests.
-- Phases 6–7: pending.
+- **Phase 6 — Dashboards:** ✅ Role-aware `/dashboard`: tutors see requests received (name, email, message, date); students see requests they sent (tutor name, city, message, date) with a link back to the profile. `RequestCard`, empty states; isolation enforced by RLS.
+- Phase 7: pending.
 
 See [`docs/superpowers/specs/2026-06-21-tutormatch-design.md`](docs/superpowers/specs/2026-06-21-tutormatch-design.md) for the full design spec and phased roadmap.
