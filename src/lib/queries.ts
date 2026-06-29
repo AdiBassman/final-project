@@ -22,7 +22,7 @@ interface TutorRow {
 }
 
 const TUTOR_SELECT =
-  'id, bio, city, hourly_rate, online_available, created_at, profiles!inner(full_name), tutor_subjects(subjects(id, name))'
+  'id, bio, city, hourly_rate, online_available, created_at, profiles!tutor_profiles_user_id_fkey(full_name), tutor_subjects(subjects(id, name))'
 
 function toTutorListItem(row: TutorRow): TutorListItem {
   return {
@@ -174,7 +174,7 @@ export async function getRequestsByStudent(studentId: string): Promise<StudentSe
   const { data, error } = await supabase
     .from('lesson_requests')
     .select(
-      'id, message, status, tutor_note, created_at, subjects(name), tutor_profiles!inner(id, city, profiles!inner(full_name))',
+      'id, message, status, tutor_note, created_at, subjects(name), tutor_profiles!inner(id, city, profiles!tutor_profiles_user_id_fkey(full_name))',
     )
     .eq('student_id', studentId)
     .order('created_at', { ascending: false })
