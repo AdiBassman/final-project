@@ -6,6 +6,7 @@ import type {
   TutorListItem,
   TutorInboxRequest,
   StudentSentRequest,
+  RequestStatus,
 } from './types'
 
 // Shape PostgREST returns for the embedded join below.
@@ -64,6 +65,7 @@ export async function sendLessonRequest(params: {
   studentName: string
   studentEmail: string
   message: string
+  subjectId: number | null
 }): Promise<void> {
   const { error } = await supabase.from('lesson_requests').insert({
     tutor_id: params.tutorId,
@@ -71,7 +73,31 @@ export async function sendLessonRequest(params: {
     student_name: params.studentName,
     student_email: params.studentEmail,
     message: params.message,
+    subject_id: params.subjectId,
   })
+  if (error) throw error
+}
+
+// Whether the given student already sent a request to the given tutor.
+export async function hasContactedTutor(studentId: string, tutorId: string): Promise<boolean> {
+  const { count, error } = await supabase
+    .from('lesson_requests')
+    .select('id', { count: 'exact', head: true })
+    .eq('student_id', studentId)
+    .eq('tutor_id', tutorId)
+  if (error) throw error
+  return (count ?? 0) > 0
+}
+
+// Tutor sets the status of a request sent to them.
+export async function updateRequestStatus(
+  requestId: string,
+  status: 'accepted' | 'declined',
+): Promise<void> {
+  const { error } = await supabase
+    .from('lesson_requests')
+    .update({ status })
+    .eq('id', requestId)
   if (error) throw error
 }
 
@@ -79,16 +105,20 @@ export async function sendLessonRequest(params: {
 export async function getRequestsForTutor(userId: string): Promise<TutorInboxRequest[]> {
   const { data, error } = await supabase
     .from('lesson_requests')
-    .select('id, student_name, student_email, message, created_at, tutor_profiles!inner(user_id)')
+    .select(
+      'id, student_name, student_email, message, status, created_at, subjects(name), tutor_profiles!inner(user_id)',
+    )
     .eq('tutor_profiles.user_id', userId)
     .order('created_at', { ascending: false })
   if (error) throw error
-  return (data ?? []).map((r) => ({
-    id: r.id as string,
-    student_name: r.student_name as string,
-    student_email: r.student_email as string,
-    message: r.message as string,
-    created_at: r.created_at as string,
+  return ((data ?? []) as unknown as TutorRequestRow[]).map((r) => ({
+    id: r.id,
+    student_name: r.student_name,
+    student_email: r.student_email,
+    message: r.message,
+    status: r.status,
+    subject_name: r.subjects?.name ?? null,
+    created_at: r.created_at,
   }))
 }
 
@@ -97,7 +127,7 @@ export async function getRequestsByStudent(studentId: string): Promise<StudentSe
   const { data, error } = await supabase
     .from('lesson_requests')
     .select(
-      'id, message, created_at, tutor_profiles!inner(id, city, profiles!inner(full_name))',
+      'id, message, status, created_at, subjects(name), tutor_profiles!inner(id, city, profiles!inner(full_name))',
     )
     .eq('student_id', studentId)
     .order('created_at', { ascending: false })
@@ -105,6 +135,8 @@ export async function getRequestsByStudent(studentId: string): Promise<StudentSe
   return ((data ?? []) as unknown as StudentRequestRow[]).map((r) => ({
     id: r.id,
     message: r.message,
+    status: r.status,
+    subject_name: r.subjects?.name ?? null,
     created_at: r.created_at,
     tutor: {
       id: r.tutor_profiles.id,
@@ -114,10 +146,22 @@ export async function getRequestsByStudent(studentId: string): Promise<StudentSe
   }))
 }
 
+interface TutorRequestRow {
+  id: string
+  student_name: string
+  student_email: string
+  message: string
+  status: RequestStatus
+  created_at: string
+  subjects: { name: string } | null
+}
+
 interface StudentRequestRow {
   id: string
   message: string
+  status: RequestStatus
   created_at: string
+  subjects: { name: string } | null
   tutor_profiles: { id: string; city: string; profiles: { full_name: string } | null }
 }
 

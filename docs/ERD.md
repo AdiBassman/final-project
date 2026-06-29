@@ -43,9 +43,11 @@ erDiagram
         uuid id PK
         uuid tutor_id FK "-> tutor_profiles.id"
         uuid student_id FK "-> profiles.id"
+        integer subject_id FK "-> subjects.id, nullable"
         text student_name
         text student_email
         text message
+        text status "pending | accepted | declined"
         timestamptz created_at
     }
 ```
@@ -102,9 +104,11 @@ A lesson inquiry from a student to a tutor. Immutable.
 | id | uuid | PK | default `gen_random_uuid()` |
 | tutor_id | uuid | FK → `tutor_profiles.id` | cascade on delete |
 | student_id | uuid | FK → `profiles.id` | cascade on delete |
+| subject_id | integer | FK → `subjects.id` | nullable; `ON DELETE SET NULL` |
 | student_name | text | | snapshot at send time |
 | student_email | text | | snapshot at send time |
 | message | text | | not null |
+| status | text | | `CHECK (status IN ('pending','accepted','declined'))`, default `pending` |
 | created_at | timestamptz | | default `now()` |
 
 ## Relationships
@@ -121,4 +125,4 @@ A lesson inquiry from a student to a tutor. Immutable.
 - **tutor_profiles** — public read; insert/update/delete only your own (insert also requires role = tutor).
 - **subjects** — public read; no client writes.
 - **tutor_subjects** — public read; a tutor manages links only for their own tutor row.
-- **lesson_requests** — insert only as yourself (`student_id = auth.uid()`); readable by the sending student or the target tutor; no update/delete.
+- **lesson_requests** — insert only as yourself (`student_id = auth.uid()`); readable by the sending student or the target tutor; the target tutor may update (used to set `status`); no delete.

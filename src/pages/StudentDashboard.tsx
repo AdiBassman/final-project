@@ -45,6 +45,8 @@ export default function StudentDashboard() {
               key={r.id}
               title={r.tutor.full_name}
               subtitle={r.tutor.city}
+              subject={r.subject_name}
+              status={r.status}
               message={r.message}
               date={r.created_at}
               linkTo={`/tutors/${r.tutor.id}`}

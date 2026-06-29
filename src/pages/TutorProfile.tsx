@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getTutor } from '../lib/queries'
+import { getTutor, hasContactedTutor } from '../lib/queries'
 import type { TutorListItem } from '../lib/types'
 import { useAuth } from '../auth/useAuth'
 import Avatar from '../components/Avatar'
@@ -10,12 +10,13 @@ import ContactModal from '../components/ContactModal'
 
 export default function TutorProfile() {
   const { id } = useParams<{ id: string }>()
-  const { session } = useAuth()
+  const { session, user } = useAuth()
   const navigate = useNavigate()
   const [tutor, setTutor] = useState<TutorListItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [contactOpen, setContactOpen] = useState(false)
+  const [alreadyContacted, setAlreadyContacted] = useState(false)
 
   function handleContact() {
     if (!session) {
@@ -43,6 +44,21 @@ export default function TutorProfile() {
       active = false
     }
   }, [id])
+
+  // Has this logged-in user already contacted this tutor?
+  useEffect(() => {
+    if (!id || !user) {
+      setAlreadyContacted(false)
+      return
+    }
+    let active = true
+    hasContactedTutor(user.id, id)
+      .then((c) => active && setAlreadyContacted(c))
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [id, user, contactOpen])
 
   if (loading) return <Spinner />
   if (error) return <ErrorMessage message={error} />
@@ -113,12 +129,18 @@ export default function TutorProfile() {
         {!session && (
           <p className="mt-2 text-sm text-slate-500">You'll be asked to log in first.</p>
         )}
+        {alreadyContacted && (
+          <p className="mt-2 text-sm text-emerald-700">
+            You've already contacted this tutor. You can send another message if you like.
+          </p>
+        )}
       </div>
 
       {contactOpen && (
         <ContactModal
           tutorId={tutor.id}
           tutorName={tutor.full_name}
+          subjects={tutor.subjects}
           onClose={() => setContactOpen(false)}
         />
       )}

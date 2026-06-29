@@ -1,20 +1,23 @@
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { sendLessonRequest } from '../lib/queries'
+import type { Subject } from '../lib/types'
 
 interface ContactModalProps {
   tutorId: string
   tutorName: string
+  subjects: Subject[]
   onClose: () => void
 }
 
 const inputClass =
   'w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
-export default function ContactModal({ tutorId, tutorName, onClose }: ContactModalProps) {
+export default function ContactModal({ tutorId, tutorName, subjects, onClose }: ContactModalProps) {
   const { user, profile } = useAuth()
   const [name, setName] = useState(profile?.full_name ?? '')
   const [email, setEmail] = useState(user?.email ?? '')
+  const [subjectId, setSubjectId] = useState<number | null>(null)
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,6 +35,7 @@ export default function ContactModal({ tutorId, tutorName, onClose }: ContactMod
         studentName: name,
         studentEmail: email,
         message,
+        subjectId,
       })
       setSent(true)
     } catch (e) {
@@ -93,6 +97,26 @@ export default function ContactModal({ tutorId, tutorName, onClose }: ContactMod
                 className={`mt-1 ${inputClass}`}
               />
             </div>
+            {subjects.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700">
+                  Subject (optional)
+                </label>
+                <select
+                  value={subjectId ?? ''}
+                  onChange={(e) => setSubjectId(e.target.value ? Number(e.target.value) : null)}
+                  className={`mt-1 ${inputClass}`}
+                >
+                  <option value="">— Select a subject —</option>
+                  {subjects.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-slate-700">Message</label>
               <textarea

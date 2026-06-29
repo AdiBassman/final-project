@@ -32,6 +32,8 @@ export interface TutorProfileInput {
   subject_ids: number[]
 }
 
+export type RequestStatus = 'pending' | 'accepted' | 'declined'
+
 export interface LessonRequest {
   id: string
   tutor_id: string
@@ -39,6 +41,8 @@ export interface LessonRequest {
   student_name: string
   student_email: string
   message: string
+  status: RequestStatus
+  subject_id: number | null
   created_at: string
 }
 
@@ -48,6 +52,8 @@ export interface TutorInboxRequest {
   student_name: string
   student_email: string
   message: string
+  status: RequestStatus
+  subject_name: string | null
   created_at: string
 }
 
@@ -55,6 +61,8 @@ export interface TutorInboxRequest {
 export interface StudentSentRequest {
   id: string
   message: string
+  status: RequestStatus
+  subject_name: string | null
   created_at: string
   tutor: { id: string; full_name: string; city: string }
 }

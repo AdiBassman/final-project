@@ -30,8 +30,8 @@ Finding a private tutor is fragmented — students dig through Facebook groups, 
 - **Tutor profiles** — tutors edit bio, city, hourly rate, online availability, and subjects.
 - **Directory** — browse tutors; filter by name, subject, city, and online-only.
 - **Tutor page** — full profile + a prominent Contact button.
-- **Lesson requests** — logged-in students send a request (name/email prefilled).
-- **Dashboards** — tutors see requests received; students see requests sent. Access enforced by Row Level Security.
+- **Lesson requests** — logged-in students send a request (name/email prefilled, optional subject). A profile shows "you've already contacted this tutor."
+- **Dashboards** — tutors see requests received and can **Accept/Decline** them; students see requests sent with their **status** (pending/accepted/declined) and subject. Access enforced by Row Level Security.
 
 ## Technologies used
 
@@ -52,7 +52,7 @@ App runs at the URL Vite prints (default http://localhost:5173).
 ### Supabase setup
 
 1. Copy `.env.example` to `.env.local` and fill in your Supabase **Project URL** and **publishable (anon) key**. Never put the secret key in this app.
-2. In the Supabase SQL editor, run the migrations in `supabase/migrations/` in order (`0001_…`, `0002_…`, `0003_…`). Then optionally run `supabase/seed.sql` to load 10 demo tutors, 2 demo students, and sample lesson requests (all seeded accounts share the password `TutorDemo123!`).
+2. In the Supabase SQL editor, run the migrations in `supabase/migrations/` in order (`0001_…` through `0004_…`). Then optionally run `supabase/seed.sql` to load 10 demo tutors, 2 demo students, and sample lesson requests (all seeded accounts share the password `TutorDemo123!`).
 3. Auth → Providers → Email: for easy local testing, **disable "Confirm email"** so signup logs you in immediately.
 4. Auth → URL Configuration: add your local (`http://localhost:5173`) and production Vercel URLs to the redirect allow-list.
 
