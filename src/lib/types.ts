@@ -54,6 +54,7 @@ export interface TutorInboxRequest {
   message: string
   status: RequestStatus
   subject_name: string | null
+  tutor_note: string | null
   created_at: string
 }
 
@@ -63,6 +64,7 @@ export interface StudentSentRequest {
   message: string
   status: RequestStatus
   subject_name: string | null
+  tutor_note: string | null
   created_at: string
   tutor: { id: string; full_name: string; city: string }
 }

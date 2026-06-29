@@ -122,11 +122,13 @@ export default function ContactModal({ tutorId, tutorName, subjects, onClose }: 
               <textarea
                 required
                 rows={4}
+                maxLength={1000}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className={`mt-1 ${inputClass}`}
                 placeholder="What would you like help with?"
               />
+              <p className="mt-1 text-right text-xs text-slate-400">{message.length}/1000</p>
             </div>
 
             {error && <p className="text-sm text-red-600">{error}</p>}
@@ -141,7 +143,7 @@ export default function ContactModal({ tutorId, tutorName, subjects, onClose }: 
               </button>
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || !message.trim()}
                 className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
               >
                 {submitting ? 'Sending…' : 'Send request'}

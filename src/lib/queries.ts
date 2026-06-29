@@ -91,14 +91,15 @@ export async function hasContactedTutor(studentId: string, tutorId: string): Pro
   return (count ?? 0) > 0
 }
 
-// Tutor sets the status of a request sent to them.
+// Tutor sets the status of a request sent to them, with an optional note.
 export async function updateRequestStatus(
   requestId: string,
   status: 'accepted' | 'declined',
+  note?: string,
 ): Promise<void> {
   const { error } = await supabase
     .from('lesson_requests')
-    .update({ status })
+    .update({ status, tutor_note: note?.trim() ? note.trim() : null })
     .eq('id', requestId)
   if (error) throw error
 }
@@ -108,7 +109,7 @@ export async function getRequestsForTutor(userId: string): Promise<TutorInboxReq
   const { data, error } = await supabase
     .from('lesson_requests')
     .select(
-      'id, student_name, student_email, message, status, created_at, subjects(name), tutor_profiles!inner(user_id)',
+      'id, student_name, student_email, message, status, tutor_note, created_at, subjects(name), tutor_profiles!inner(user_id)',
     )
     .eq('tutor_profiles.user_id', userId)
     .order('created_at', { ascending: false })
@@ -120,6 +121,7 @@ export async function getRequestsForTutor(userId: string): Promise<TutorInboxReq
     message: r.message,
     status: r.status,
     subject_name: r.subjects?.name ?? null,
+    tutor_note: r.tutor_note,
     created_at: r.created_at,
   }))
 }
@@ -129,7 +131,7 @@ export async function getRequestsByStudent(studentId: string): Promise<StudentSe
   const { data, error } = await supabase
     .from('lesson_requests')
     .select(
-      'id, message, status, created_at, subjects(name), tutor_profiles!inner(id, city, profiles!inner(full_name))',
+      'id, message, status, tutor_note, created_at, subjects(name), tutor_profiles!inner(id, city, profiles!inner(full_name))',
     )
     .eq('student_id', studentId)
     .order('created_at', { ascending: false })
@@ -139,6 +141,7 @@ export async function getRequestsByStudent(studentId: string): Promise<StudentSe
     message: r.message,
     status: r.status,
     subject_name: r.subjects?.name ?? null,
+    tutor_note: r.tutor_note,
     created_at: r.created_at,
     tutor: {
       id: r.tutor_profiles.id,
@@ -154,6 +157,7 @@ interface TutorRequestRow {
   student_email: string
   message: string
   status: RequestStatus
+  tutor_note: string | null
   created_at: string
   subjects: { name: string } | null
 }
@@ -162,6 +166,7 @@ interface StudentRequestRow {
   id: string
   message: string
   status: RequestStatus
+  tutor_note: string | null
   created_at: string
   subjects: { name: string } | null
   tutor_profiles: { id: string; city: string; profiles: { full_name: string } | null }

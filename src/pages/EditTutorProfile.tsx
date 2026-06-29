@@ -101,9 +101,11 @@ export default function EditTutorProfile() {
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={4}
+            maxLength={600}
             className={`mt-1 ${inputClass}`}
             placeholder="Tell students about your experience and teaching style."
           />
+          <p className="mt-1 text-right text-xs text-slate-400">{bio.length}/600</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

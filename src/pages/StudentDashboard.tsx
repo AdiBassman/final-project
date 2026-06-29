@@ -50,6 +50,13 @@ export default function StudentDashboard() {
               message={r.message}
               date={r.created_at}
               linkTo={`/tutors/${r.tutor.id}`}
+              footer={
+                r.tutor_note ? (
+                  <p className="text-sm text-slate-500">
+                    Tutor's note: <span className="text-slate-700">{r.tutor_note}</span>
+                  </p>
+                ) : null
+              }
             />
           ))
         )}
