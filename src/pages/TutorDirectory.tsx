@@ -5,9 +5,9 @@ import { useAuth } from '../auth/useAuth'
 import type { Subject, TutorListItem } from '../lib/types'
 import TutorCard from '../components/TutorCard'
 import FilterBar, { type Filters } from '../components/FilterBar'
-import Spinner from '../components/Spinner'
 import EmptyState from '../components/EmptyState'
 import ErrorMessage from '../components/ErrorMessage'
+import { TutorGridSkeleton } from '../components/Skeletons'
 
 type Sort = 'name' | 'price_asc' | 'price_desc'
 
@@ -138,7 +138,16 @@ export default function TutorDirectory() {
     return sorted
   }, [tutors, filters, sort, savedOnly, favorites])
 
-  if (loading) return <Spinner label="Loading tutors…" />
+  if (loading) {
+    return (
+      <section className="py-4">
+        <h1 className="text-2xl font-bold text-slate-900">Find a tutor</h1>
+        <div className="mt-6">
+          <TutorGridSkeleton />
+        </div>
+      </section>
+    )
+  }
   if (error) return <ErrorMessage message={error} />
 
   return (

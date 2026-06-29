@@ -5,9 +5,9 @@ import { getRequestsByStudent, getFavoriteTutors, setFavorite } from '../lib/que
 import type { StudentSentRequest, TutorListItem } from '../lib/types'
 import RequestCard from '../components/RequestCard'
 import TutorCard from '../components/TutorCard'
-import Spinner from '../components/Spinner'
 import EmptyState from '../components/EmptyState'
 import ErrorMessage from '../components/ErrorMessage'
+import { RequestListSkeleton } from '../components/Skeletons'
 
 export default function StudentDashboard() {
   const { user } = useAuth()
@@ -43,7 +43,16 @@ export default function StudentDashboard() {
     }
   }
 
-  if (loading) return <Spinner label="Loading your requests…" />
+  if (loading) {
+    return (
+      <section className="py-6">
+        <h1 className="text-2xl font-bold text-slate-900">My requests</h1>
+        <div className="mt-6">
+          <RequestListSkeleton />
+        </div>
+      </section>
+    )
+  }
   if (error) return <ErrorMessage message={error} />
 
   return (
