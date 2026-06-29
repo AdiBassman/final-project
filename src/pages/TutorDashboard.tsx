@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
-import { getRequestsForTutor, updateRequestStatus } from '../lib/queries'
+import { getRequestsForTutor, getMyTutorProfile, updateRequestStatus } from '../lib/queries'
 import type { TutorInboxRequest } from '../lib/types'
 import RequestCard from '../components/RequestCard'
-import Spinner from '../components/Spinner'
 import EmptyState from '../components/EmptyState'
 import ErrorMessage from '../components/ErrorMessage'
+import { RequestListSkeleton } from '../components/Skeletons'
 
 const btn = 'rounded-md px-3 py-1 text-sm font-medium'
 
 export default function TutorDashboard() {
   const { user } = useAuth()
   const [requests, setRequests] = useState<TutorInboxRequest[]>([])
+  const [hasProfile, setHasProfile] = useState(true)
   const [notes, setNotes] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -19,8 +21,12 @@ export default function TutorDashboard() {
   useEffect(() => {
     if (!user) return
     let active = true
-    getRequestsForTutor(user.id)
-      .then((r) => active && setRequests(r))
+    Promise.all([getRequestsForTutor(user.id), getMyTutorProfile(user.id)])
+      .then(([r, mine]) => {
+        if (!active) return
+        setRequests(r)
+        setHasProfile(mine.profile !== null)
+      })
       .catch((e) => active && setError(e instanceof Error ? e.message : 'Failed to load requests'))
       .finally(() => active && setLoading(false))
     return () => {
@@ -42,7 +48,16 @@ export default function TutorDashboard() {
     }
   }
 
-  if (loading) return <Spinner label="Loading requests…" />
+  if (loading) {
+    return (
+      <section className="py-6">
+        <h1 className="text-2xl font-bold text-slate-900">Lesson requests</h1>
+        <div className="mt-6">
+          <RequestListSkeleton />
+        </div>
+      </section>
+    )
+  }
   if (error) return <ErrorMessage message={error} />
 
   const pending = requests.filter((r) => r.status === 'pending').length
@@ -58,6 +73,21 @@ export default function TutorDashboard() {
           </span>
         )}
       </p>
+
+      {!hasProfile && (
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm text-amber-800">
+            Your tutor profile isn't set up yet — students can't find you in the directory until
+            you add your city, rate, and subjects.
+          </p>
+          <Link
+            to="/profile/edit"
+            className="mt-3 inline-block rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          >
+            Complete your profile
+          </Link>
+        </div>
+      )}
 
       <div className="mt-6 space-y-3">
         {requests.length === 0 ? (

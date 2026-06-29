@@ -4,14 +4,10 @@ import { getSubjects, getMyTutorProfile, saveTutorProfile } from '../lib/queries
 import type { Subject } from '../lib/types'
 import SubjectMultiSelect from '../components/SubjectMultiSelect'
 import Avatar from '../components/Avatar'
+import { CITIES } from '../lib/cities'
 
 const inputClass =
   'w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
-
-const CITIES = [
-  'Tel Aviv', 'Jerusalem', 'Haifa', "Be'er Sheva", 'Rishon LeZion',
-  'Petah Tikva', 'Netanya', 'Ramat Gan', 'Herzliya', "Be'er Ya'akov",
-]
 
 export default function EditTutorProfile() {
   const { user, profile } = useAuth()
@@ -111,19 +107,21 @@ export default function EditTutorProfile() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700">City</label>
-            <input
-              type="text"
+            <select
               required
-              list="cities"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               className={`mt-1 ${inputClass}`}
-            />
-            <datalist id="cities">
+            >
+              <option value="" disabled>
+                Select a city
+              </option>
               {CITIES.map((c) => (
-                <option key={c} value={c} />
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
-            </datalist>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700">
