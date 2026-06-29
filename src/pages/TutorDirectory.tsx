@@ -34,6 +34,7 @@ export default function TutorDirectory() {
     onlineOnly: params.get('online') === '1',
   }
   const sort = (params.get('sort') as Sort) || 'name'
+  const savedOnly = params.get('saved') === '1'
 
   function patchParams(patch: Record<string, string | null>) {
     const next = new URLSearchParams(params)
@@ -54,7 +55,7 @@ export default function TutorDirectory() {
   }
 
   const hasFilters = Boolean(
-    filters.search || filters.subjectId || filters.city || filters.onlineOnly,
+    filters.search || filters.subjectId || filters.city || filters.onlineOnly || savedOnly,
   )
 
   useEffect(() => {
@@ -127,6 +128,7 @@ export default function TutorDirectory() {
       if (filters.subjectId && !t.subjects.some((s) => s.id === filters.subjectId)) return false
       if (filters.city && t.city !== filters.city) return false
       if (filters.onlineOnly && !t.online_available) return false
+      if (savedOnly && !favorites.has(t.id)) return false
       return true
     })
     const sorted = [...filtered]
@@ -134,7 +136,7 @@ export default function TutorDirectory() {
     else if (sort === 'price_desc') sorted.sort((a, b) => b.hourly_rate - a.hourly_rate)
     else sorted.sort((a, b) => a.full_name.localeCompare(b.full_name))
     return sorted
-  }, [tutors, filters, sort])
+  }, [tutors, filters, sort, savedOnly, favorites])
 
   if (loading) return <Spinner label="Loading tutors…" />
   if (error) return <ErrorMessage message={error} />
@@ -170,6 +172,17 @@ export default function TutorDirectory() {
             ))}
           </select>
         </label>
+        {user && (
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={savedOnly}
+              onChange={(e) => patchParams({ saved: e.target.checked ? '1' : null })}
+              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            ♥ Saved only
+          </label>
+        )}
         {hasFilters && (
           <button
             onClick={() => setParams(sort !== 'name' ? { sort } : {}, { replace: true })}
