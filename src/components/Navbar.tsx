@@ -41,7 +41,7 @@ export default function Navbar() {
                   Edit Profile
                 </NavLink>
               )}
-              <span className="px-3 text-sm text-slate-500">
+              <span className="hidden px-3 text-sm text-slate-500 sm:inline">
                 {profile?.full_name || session.user.email}
               </span>
               <button

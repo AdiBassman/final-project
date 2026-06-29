@@ -24,6 +24,15 @@ Finding a private tutor is fragmented — students dig through Facebook groups, 
 - Direct in-platform lesson requests with a per-tutor inbox.
 - Clean, focused UX — no noise, no irrelevant marketplace features.
 
+## Features
+
+- **Auth** — email/password signup with a role (tutor / student), login, logout; session persists.
+- **Tutor profiles** — tutors edit bio, city, hourly rate, online availability, and subjects.
+- **Directory** — browse tutors; filter by name, subject, city, and online-only.
+- **Tutor page** — full profile + a prominent Contact button.
+- **Lesson requests** — logged-in students send a request (name/email prefilled).
+- **Dashboards** — tutors see requests received; students see requests sent. Access enforced by Row Level Security.
+
 ## Technologies used
 
 - **Frontend:** React + Vite + TypeScript, React Router
@@ -46,6 +55,13 @@ App runs at the URL Vite prints (default http://localhost:5173).
 2. In the Supabase SQL editor, run the migrations in `supabase/migrations/` in order (`0001_…`, `0002_…`, `0003_…`). Then optionally run `supabase/seed.sql` to load 10 demo tutors, 2 demo students, and sample lesson requests (all seeded accounts share the password `TutorDemo123!`).
 3. Auth → Providers → Email: for easy local testing, **disable "Confirm email"** so signup logs you in immediately.
 4. Auth → URL Configuration: add your local (`http://localhost:5173`) and production Vercel URLs to the redirect allow-list.
+
+### Demo accounts (after running `seed.sql`)
+
+All seeded accounts share the password **`TutorDemo123!`**.
+
+- Tutors: `noa.cohen@tutormatch.test`, `maya.friedman@tutormatch.test`, … (10 total)
+- Students: `student.one@tutormatch.test`, `student.two@tutormatch.test`
 
 ## Build
 
@@ -75,6 +91,9 @@ Deployment link: https://final-project-ochre-chi-15.vercel.app/
 - **Phase 4 — Directory + filtering:** ✅ `/tutors` lists all tutors (`TutorCard` grid) with client-side filters (name search, subject, city, online-only). `/tutors/:id` shows a full tutor profile. Shared `Spinner`/`EmptyState`/`ErrorMessage`.
 - **Phase 5 — Lesson requests:** ✅ `lesson_requests` table + RLS (student inserts own; student & target tutor can read). `ContactModal` on the tutor profile (auth-gated; prefilled name/email from account). `sendLessonRequest` query. Seed adds 2 students + sample requests.
 - **Phase 6 — Dashboards:** ✅ Role-aware `/dashboard`: tutors see requests received (name, email, message, date); students see requests they sent (tutor name, city, message, date) with a link back to the profile. `RequestCard`, empty states; isolation enforced by RLS.
-- Phase 7: pending.
+- **Phase 7 — Hardening + docs:** ✅ Loading/error/empty states across pages, responsive layout, ERD documented, final README.
 
-See [`docs/superpowers/specs/2026-06-21-tutormatch-design.md`](docs/superpowers/specs/2026-06-21-tutormatch-design.md) for the full design spec and phased roadmap.
+## Documentation
+
+- **ERD:** [`docs/ERD.md`](docs/ERD.md) — tables, columns, types, keys, relationships, RLS summary.
+- **Design spec + roadmap:** [`docs/superpowers/specs/2026-06-21-tutormatch-design.md`](docs/superpowers/specs/2026-06-21-tutormatch-design.md).
