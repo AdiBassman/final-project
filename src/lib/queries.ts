@@ -16,12 +16,13 @@ interface TutorRow {
   city: string
   hourly_rate: number
   online_available: boolean
+  created_at: string
   profiles: { full_name: string } | null
   tutor_subjects: { subjects: Subject | null }[]
 }
 
 const TUTOR_SELECT =
-  'id, bio, city, hourly_rate, online_available, profiles!inner(full_name), tutor_subjects(subjects(id, name))'
+  'id, bio, city, hourly_rate, online_available, created_at, profiles!inner(full_name), tutor_subjects(subjects(id, name))'
 
 function toTutorListItem(row: TutorRow): TutorListItem {
   return {
@@ -31,6 +32,7 @@ function toTutorListItem(row: TutorRow): TutorListItem {
     city: row.city,
     hourly_rate: row.hourly_rate,
     online_available: row.online_available,
+    created_at: row.created_at,
     subjects: row.tutor_subjects
       .map((ts) => ts.subjects)
       .filter((s): s is Subject => s !== null)

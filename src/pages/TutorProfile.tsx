@@ -92,6 +92,13 @@ export default function TutorProfile() {
             )}
           </p>
           <p className="mt-2 text-lg font-semibold text-slate-800">₪{tutor.hourly_rate}/hr</p>
+          <p className="mt-1 text-xs text-slate-400">
+            Member since{' '}
+            {new Date(tutor.created_at).toLocaleDateString(undefined, {
+              month: 'long',
+              year: 'numeric',
+            })}
+          </p>
         </div>
       </div>
 
